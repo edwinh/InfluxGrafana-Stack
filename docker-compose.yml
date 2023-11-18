@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  influxdb:
+    image: influxdb
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2:rw
+    env_file:
+      - .env
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD} 
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    entrypoint: ["./entrypoint.sh"]
+    restart: always
+    ports:
+      - ${DOCKER_INFLUXDB_INIT_PORT}:8086
+
+  # telegraf:
+  #   image: telegraf:1.19
+  #   volumes:
+  #     - ${TELEGRAF_CFG_PATH}:/etc/telegraf/telegraf.conf:rw
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - influxdb
+
+  grafana:
+    image: grafana/grafana-oss
+    restart: always
+    volumes:
+      - grafana-storage:/var/lib/grafana:rw
+    depends_on:
+      - influxdb
+    ports:
+      - ${GRAFANA_PORT}:3000
+
+volumes:
+  grafana-storage:
+  influxdb-storage:
